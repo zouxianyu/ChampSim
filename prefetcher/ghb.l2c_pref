@@ -94,7 +94,7 @@ uint32_t CACHE::l2c_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
     std::vector<uint64_t> prefetch_cl_addrs = 
         get_prefetch_cl_addrs(get_accessed_cl_addrs());
 
-    for (uint64_t &prefetch_cl_addr : prefetch_cl_addrs) {
+    for (uint64_t prefetch_cl_addr : prefetch_cl_addrs) {
         prefetch_line(ip, addr, prefetch_cl_addr << LOG2_BLOCK_SIZE, FILL_L2, 0);
     }
 
