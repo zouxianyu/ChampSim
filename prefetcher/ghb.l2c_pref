@@ -47,6 +47,8 @@ static bool is_valid_GHB_index(uint64_t index) {
 
 static std::vector<uint64_t> get_accessed_cl_addrs() {
     std::vector<uint64_t> result;
+
+    // loop through the GHB, save the single linked list to a vector
     uint64_t curr = GHB_head;
     while (is_valid_GHB_index(curr)) {
         GHBEntry &GHB_entry = GHB[curr % GHB_SIZE];
@@ -59,10 +61,12 @@ static std::vector<uint64_t> get_accessed_cl_addrs() {
 static std::vector<uint64_t> get_prefetch_cl_addrs(const std::vector<uint64_t> &cl_addrs) {
     std::vector<uint64_t> result;
 
+    // make sure we have enough accessed addresses
     if (cl_addrs.size() < PREF_LAST) {
         return result;
     }
 
+    // try to calculate the stride
     int64_t stride = cl_addrs[1] - cl_addrs[0];
     if (stride == 0) {
         return result;
@@ -75,6 +79,7 @@ static std::vector<uint64_t> get_prefetch_cl_addrs(const std::vector<uint64_t> &
         }
     }
 
+    // calculate the prefetch addresses
     for (int i = 0; i <= PREF_DEGREE; i++) {
         result.push_back(static_cast<int64_t>(cl_addrs[0]) + 
                          (PREF_LOOKAHEAD + i) * stride);
@@ -98,6 +103,7 @@ uint32_t CACHE::l2c_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
         prefetch_line(ip, addr, prefetch_cl_addr << LOG2_BLOCK_SIZE, FILL_L2, 0);
     }
 
+    // dont forget to update the GHB head
     GHB_head++;
 
     return metadata_in;
