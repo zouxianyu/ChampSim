@@ -16,17 +16,12 @@ struct CacheExtraComparator {
     }
 };
 
-static CacheExtra **extra = nullptr;
+static CacheExtra extra[LLC_SET][LLC_WAY]{};
 static uint64_t timepoint = 0;
 
 // initialize replacement state
 void CACHE::llc_initialize_replacement()
 {
-    // allocate extra cache info
-    extra = new CacheExtra *[NUM_SET];
-    for (uint32_t i = 0; i < NUM_SET; i++) {
-        extra[i] = new CacheExtra[NUM_WAY]{};
-    }
 }
 
 // find replacement victim
@@ -71,9 +66,4 @@ void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t wa
 
 void CACHE::llc_replacement_final_stats()
 {
-    for (uint32_t i = 0; i < NUM_SET; i++) {
-        delete []extra[i];
-    }
-    delete []extra;
-    extra = nullptr;
 }
