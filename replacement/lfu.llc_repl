@@ -43,6 +43,13 @@ uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, c
     CacheExtra *result = std::min_element(extra[set], extra[set] + NUM_WAY,
                                           CacheExtraComparator());
 
+    // sanity check
+    assert(result >= extra[set] && result < extra[set] + NUM_WAY);
+
+    // clear victim's state
+    result->freq = 0;
+    result->timestamp = 0;
+
     return result - extra[set];
 }
 
