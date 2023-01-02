@@ -1,0 +1,72 @@
+#include <algorithm>
+#include "cache.h"
+
+struct CacheExtra {
+    uint64_t freq;
+    uint64_t timestamp;
+};
+
+struct CacheExtraComparator {
+    bool operator ()(const CacheExtra &a, const CacheExtra &b) {
+        if (a.freq != b.freq) {
+            return a.freq < b.freq;
+        } else {
+            return a.timestamp < b.timestamp;
+        }
+    }
+};
+
+static CacheExtra **extra = nullptr;
+static uint64_t timepoint = 0;
+
+// initialize replacement state
+void CACHE::llc_initialize_replacement()
+{
+    // allocate extra cache info
+    extra = new CacheExtra *[NUM_SET];
+    for (uint32_t i = 0; i < NUM_SET; i++) {
+        extra[i] = new CacheExtra[NUM_WAY]{};
+    }
+}
+
+// find replacement victim
+uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, const BLOCK *current_set, uint64_t ip, uint64_t full_addr, uint32_t type)
+{
+    // find emply slot
+    for (uint32_t way = 0; way < NUM_WAY; way++) {
+        if (!block[set][way].valid) {
+            return way;
+        }
+    }
+
+    // find victim
+    CacheExtra *result = std::min_element(extra[set], extra[set] + NUM_WAY,
+                                          CacheExtraComparator());
+
+    return result - extra[set];
+}
+
+// called on every cache hit and cache fill
+void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t way, uint64_t full_addr, uint64_t ip, uint64_t victim_addr, uint32_t type, uint8_t hit)
+{
+    // increase world time
+    timepoint++;
+
+    // writeback hit does not update LFU state
+    if (hit && (type == WRITEBACK)) {
+        return;
+    }
+
+    // update LFU state
+    extra[set][way].freq++;
+    extra[set][way].timestamp = timepoint;
+}
+
+void CACHE::llc_replacement_final_stats()
+{
+    for (uint32_t i = 0; i < NUM_SET; i++) {
+        delete []extra[i];
+    }
+    delete []extra;
+    extra = nullptr;
+}
