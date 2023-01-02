@@ -17,9 +17,9 @@ struct GHBEntry {
     uint64_t prev_index;
 };
 
-ITEntry IT[IT_SIZE]{};
-GHBEntry GHB[GHB_SIZE]{};
-uint64_t GHB_head = 0;
+static ITEntry IT[IT_SIZE]{};
+static GHBEntry GHB[GHB_SIZE]{};
+static uint64_t GHB_head = 0;
 
 static void update_IT_GHB(uint64_t ip, uint64_t cl_addr) {
     ITEntry &IT_entry = IT[ip % IT_SIZE];
