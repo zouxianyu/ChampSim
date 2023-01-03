@@ -1,4 +1,4 @@
-#include <deque>
+#include <vector>
 #include "cache.h"
 
 #define IT_SIZE (256)
@@ -67,13 +67,13 @@ static std::vector<uint64_t> get_prefetch_cl_addrs(const std::vector<uint64_t> &
     }
 
     // try to calculate the stride
-    int64_t stride = cl_addrs[1] - cl_addrs[0];
+    int64_t stride = cl_addrs[0] - cl_addrs[1];
     if (stride == 0) {
         return result;
     }
 
     for (size_t i = 1; i < PREF_LAST - 1; i++) {
-        int64_t next_stride = cl_addrs[i + 1] - cl_addrs[i];
+        int64_t next_stride = cl_addrs[i] - cl_addrs[i + 1];
         if (next_stride != stride) {
             return result;
         }
